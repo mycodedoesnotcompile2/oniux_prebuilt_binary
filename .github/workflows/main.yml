@@ -76,7 +76,7 @@ jobs:
           # dependencies are only needed on ubuntu as that's the only place where
           # we make cross-compilation
           if [[ $OS =~ ^ubuntu.*$ ]]; then
-            sudo $APT install crossbuild-essential-arm64 crossbuild-essential-armhf
+            sudo $APT install crossbuild-essential-arm64 crossbuild-essential-armhf libsqlite3-dev
           fi
 
           if [[ $TARGET == *"-musl"* ]]; then
