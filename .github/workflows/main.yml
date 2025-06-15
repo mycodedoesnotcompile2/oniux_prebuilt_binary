@@ -70,9 +70,6 @@ jobs:
             ~/.cargo/registry
             /tmp/oniux
           key: build-cargo-registry-${{ matrix.TARGET }}
-      
-      - name: List
-        run: find $ONIUX_ROOT_DIR
         
       - name: Install and configure dependencies
         run: |
