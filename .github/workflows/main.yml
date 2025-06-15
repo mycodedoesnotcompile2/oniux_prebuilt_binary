@@ -44,11 +44,11 @@ jobs:
           - TARGET: arm-unknown-linux-musleabihf # raspberry pi 0-1, not tested
             OS: ubuntu-latest
           
-          - TARGET: x86_64-apple-darwin # tested on a mac, is not properly signed so there are security warnings
-            OS: macos-latest
+          # - TARGET: x86_64-apple-darwin # tested on a mac, is not properly signed so there are security warnings
+          #   OS: macos-latest
           
-          - TARGET: x86_64-pc-windows-msvc # tested on a windows machine
-            OS: windows-latest
+          # - TARGET: x86_64-pc-windows-msvc # tested on a windows machine
+          #   OS: windows-latest
             
     runs-on: ${{ matrix.OS }}
     
@@ -131,8 +131,8 @@ jobs:
         with:
           name: results
           path: |
-            $ONIUX_BIN_PATH
-            $ONIUX_BIN_HASH_PATH
+            {{ env.ONIUX_BIN_PATH }}
+            {{ env.ONIUX_BIN_HASH_PATH }}
 
 
   deploy:
