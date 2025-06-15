@@ -113,7 +113,8 @@ jobs:
       
       - name: List target
         run: |
-          echo "ONIUX_BIN_PATH=$ONIUX_ROOT_DIR/target/$TARGET/release/oniux" >> $GITHUB_ENV
+          ONIUX_BIN_PATH="$ONIUX_ROOT_DIR/target/$TARGET/release/oniux"
+          echo "ONIUX_BIN_PATH=$ONIUX_BIN_PATH" >> $GITHUB_ENV
           ls -alh "$ONIUX_BIN_PATH"
           ldd "$ONIUX_BIN_PATH"
       
