@@ -61,7 +61,7 @@ jobs:
       - name: Clone oniux repo
         run: |
           cd /tmp/
-          git clone 'https://gitlab.torproject.org/tpo/core/oniux.git' -o "$ONIUX_ROOT_DIR"
+          git clone 'https://gitlab.torproject.org/tpo/core/oniux.git' -o oniux
 
           #echo "ONIUX_ROOT_DIR=/tmp/oniux" >> $GITHUB_ENV
       
