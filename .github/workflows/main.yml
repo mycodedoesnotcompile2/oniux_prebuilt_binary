@@ -94,7 +94,7 @@ jobs:
         run: rustup target add $TARGET
         
       - name: Run build
-        run: 
+        run: |
           cd $ONIUX_ROOT_DIR
           cargo build --release --verbose --target $TARGET
       
