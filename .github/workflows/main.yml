@@ -86,6 +86,11 @@ jobs:
             sudo $APT install musl-tools
           fi
 
+          if [[ $TARGET == "arm"* ]]; then
+            cd "$ONIUX_ROOT_DIR"
+            cargo install --force --locked bindgen-cli
+          fi
+
           # some additional configuration for cross-compilation on linux
           cat >>~/.cargo/config <<EOF
           [target.aarch64-unknown-linux-gnu]
@@ -113,31 +118,24 @@ jobs:
       
       - name: List target
         run: |
-          ONIUX_BIN_PATH="$ONIUX_ROOT_DIR/target/$TARGET/release/oniux"
-          echo "ONIUX_BIN_PATH=$ONIUX_BIN_PATH" >> $GITHUB_ENV
+          OLD_ONIUX_BIN_PATH="$ONIUX_ROOT_DIR/target/$TARGET/release/oniux"
+          ONIUX_BIN_PATH="$ONIUX_ROOT_DIR/target/$TARGET/release/oniux-$TARGET"
+          ONIUX_BIN_HASH_PATH="$ONIUX_ROOT_DIR/target/$TARGET/release/oniux-$TARGET.sha256.txt"
+          mv "$OLD_ONIUX_BIN_PATH" "$ONIUX_BIN_PATH"
+          
           ls -alh "$ONIUX_BIN_PATH"
           ldd "$ONIUX_BIN_PATH"
-      
-      - name: Compress
-        run: |
-          mkdir -p ./artifacts
-          # windows is the only OS using a different convention for executable file name
-          if [[ $OS =~ ^windows.*$ ]]; then
-              EXEC=$NAME.exe
-          else
-              EXEC=$NAME
-          fi
-          if [[ $GITHUB_REF_TYPE =~ ^tag$ ]]; then
-            TAG=$GITHUB_REF_NAME
-          else
-            TAG=$GITHUB_SHA
-          fi
-          mv ./target/$TARGET/release/$EXEC ./$EXEC
-          tar -czf ./artifacts/$NAME-$TARGET-$TAG.tar.gz $EXEC
+          
+          sha256sum --tag "$ONIUX_BIN_PATH" | tee -a "$ONIUX_BIN_HASH_PATH"
+          
+          echo "ONIUX_BIN_PATH=$ONIUX_BIN_PATH" >> $GITHUB_ENV
+          echo "ONIUX_BIN_HASH_PATH=$ONIUX_BIN_HASH_PATH" >> $GITHUB_ENV
+          
       
       - name: Archive artifact
         uses: actions/upload-artifact@v4
         with:
-          name: result
+          name: results
           path: |
-            ./artifacts
+            $ONIUX_BIN_PATH
+            $ONIUX_BIN_HASH_PATH
