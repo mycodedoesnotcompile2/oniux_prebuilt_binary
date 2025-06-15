@@ -3,6 +3,9 @@ name: Build binary
 on:
   workflow_dispatch
 
+permissions:
+  contents: write
+
 env:
   CARGO_TERM_COLOR: always
   ONIUX_ROOT_DIR: /tmp/oniux
