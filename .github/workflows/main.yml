@@ -62,8 +62,6 @@ jobs:
         run: |
           cd /tmp/
           git clone 'https://gitlab.torproject.org/tpo/core/oniux.git' -o oniux
-
-          #echo "ONIUX_ROOT_DIR=/tmp/oniux" >> $GITHUB_ENV
       
       - name: Cargo cache
         uses: actions/cache@v4
@@ -81,12 +79,11 @@ jobs:
           # dependencies are only needed on ubuntu as that's the only place where
           # we make cross-compilation
           if [[ $OS =~ ^ubuntu.*$ ]]; then
-            #APT='sudo apt -y -qq -o=Dpkg::Use-Pty=0'
             sudo $APT install crossbuild-essential-arm64 crossbuild-essential-armhf
+          fi
 
-            if [[ $TARGET == "x86_64-unknown-linux-musl" ]]; then
-              sudo $APT install musl-tools
-            fi
+          if [[ $TARGET == "x86_64-unknown-linux-musl" ]]; then
+            sudo $APT install musl-tools
           fi
 
           # some additional configuration for cross-compilation on linux
@@ -111,10 +108,14 @@ jobs:
       - name: Run build
         run: |
           cd $ONIUX_ROOT_DIR
-          cargo build --release --verbose --target $TARGET
+          #cargo build --release --verbose --target $TARGET
+          cargo build --release --target $TARGET
       
       - name: List target
-        run: find -type f $ONIUX_ROOT_DIR/target/$TARGET
+        run: |
+          echo "ONIUX_BIN_PATH=$ONIUX_ROOT_DIR/target/$TARGET/release/oniux" >> $GITHUB_ENV
+          ls -alh "$ONIUX_BIN_PATH"
+          ldd "$ONIUX_BIN_PATH"
       
       - name: Compress
         run: |
