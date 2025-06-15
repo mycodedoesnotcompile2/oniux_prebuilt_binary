@@ -116,13 +116,11 @@ jobs:
       - name: List target
         run: |
           OLD_ONIUX_BIN_PATH="$ONIUX_ROOT_DIR/target/$TARGET/release/oniux"
-          ONIUX_BIN_PATH="$ONIUX_ROOT_DIR-$TARGET"
+          ONIUX_BIN_PATH="$OLD_ONIUX_BIN_PATH-$TARGET"
           ONIUX_BIN_HASH_PATH="$ONIUX_BIN_PATH.sha256.txt"
           cp -f "$OLD_ONIUX_BIN_PATH" "$ONIUX_BIN_PATH"
-          
           ls -alh "$ONIUX_BIN_PATH"
-          
-          sha256sum --tag "$ONIUX_BIN_PATH" | tee -a "$ONIUX_BIN_HASH_PATH"
+          sha256sum --tag "$ONIUX_BIN_PATH" | tee "$ONIUX_BIN_HASH_PATH"
           
           echo "ONIUX_BIN_PATH=$ONIUX_BIN_PATH" >> $GITHUB_ENV
           echo "ONIUX_BIN_HASH_PATH=$ONIUX_BIN_HASH_PATH" >> $GITHUB_ENV
@@ -135,6 +133,7 @@ jobs:
           path: |
             $ONIUX_BIN_PATH
             $ONIUX_BIN_HASH_PATH
+
 
   deploy:
     needs: build
