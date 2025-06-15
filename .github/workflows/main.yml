@@ -114,7 +114,7 @@ jobs:
           cargo build --release --verbose --target $TARGET
       
       - name: List target
-        run: find $ONIUX_ROOT_DIR
+        run: find -type f $ONIUX_ROOT_DIR/target/$TARGET
       
       - name: Compress
         run: |
