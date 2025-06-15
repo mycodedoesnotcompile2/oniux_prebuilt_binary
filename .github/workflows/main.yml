@@ -85,7 +85,7 @@ jobs:
             sudo $APT install crossbuild-essential-arm64 crossbuild-essential-armhf
 
             if [[ $TARGET == "x86_64-unknown-linux-musl" ]]; then
-              $APT install musl-tools
+              sudo $APT install musl-tools
             fi
           fi
 
