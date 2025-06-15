@@ -124,7 +124,6 @@ jobs:
           mv "$OLD_ONIUX_BIN_PATH" "$ONIUX_BIN_PATH"
           
           ls -alh "$ONIUX_BIN_PATH"
-          ldd "$ONIUX_BIN_PATH"
           
           sha256sum --tag "$ONIUX_BIN_PATH" | tee -a "$ONIUX_BIN_HASH_PATH"
           
@@ -139,3 +138,19 @@ jobs:
           path: |
             $ONIUX_BIN_PATH
             $ONIUX_BIN_HASH_PATH
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: results
+        path: /tmp/results
+
+    - name: List target
+      run: |
+        cd "/tmp/results"
+        ls -alh
+        
