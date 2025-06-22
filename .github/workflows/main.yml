@@ -62,19 +62,19 @@ jobs:
       OS: ${{ matrix.OS }}
     
     steps:
-      - name: Get Latest Release
+      - name: Get latest release of this repo
         id: self_latest_version
         uses: abatilo/release-info-action@v1.3.0
         with:
           owner: mycodedoesnotcompile2
           repo: oniux_prebuilt_binary
       
-      - name: Clone oniux repo and check if it is a new and uncompiled yet version
+      - name: Clone oniux repo and check if there is a new and uncompiled yet version
         run: |
           cd /tmp/
           git clone 'https://gitlab.torproject.org/tpo/core/oniux.git' -o oniux
 
-          cd /tmp/oniux
+          cd /tmp/oniux/
           ONIUX_CURRENT_COMMIT_ID=$(git rev-parse --short HEAD)
           ONIUX_PREBUILT_LATEST_TAG=${{ steps.self_latest_version.outputs.latest_tag }}
           echo "ONIUX_CURRENT_COMMIT_ID=$ONIUX_CURRENT_COMMIT_ID" >> $GITHUB_ENV
@@ -91,7 +91,6 @@ jobs:
           cd /tmp/oniux
           ONIUX_VERSION=$(cargo-get package.version)
           echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_ENV
-          
       
       - name: Cargo cache
         uses: actions/cache@v4
@@ -148,6 +147,7 @@ jobs:
           OLD_ONIUX_BIN_PATH="$ONIUX_ROOT_DIR/target/$TARGET/release/oniux"
           ONIUX_BIN_PATH="$ONIUX_ROOT_DIR-$ONIUX_VERSION-$TARGET"
           ONIUX_BIN_HASH_PATH="$ONIUX_BIN_PATH.sha256.txt"
+          
           cp -f "$OLD_ONIUX_BIN_PATH" "$ONIUX_BIN_PATH"
           ls -alh "$ONIUX_BIN_PATH"
 
