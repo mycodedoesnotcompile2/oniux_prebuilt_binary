@@ -182,6 +182,8 @@ jobs:
        ONIUX_VERSION: ${{ needs.build.outputs.ONIUX_VERSION }}
     
     steps:
+     - run: echo '${{ toJSON(needs.build.outputs) }}'
+     
      - name: Download Artifact
        uses: actions/download-artifact@v4
        with:
