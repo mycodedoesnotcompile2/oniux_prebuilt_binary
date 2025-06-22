@@ -65,7 +65,7 @@ jobs:
       - name: Get cargo-get
         run: |
           cd /tmp/
-          wget -nv "$CARGO_GET" -O /usr/local/bin/cargo-get && chmod o+x /usr/local/bin/cargo-get
+          sudo wget -nv "$CARGO_GET" -O /usr/local/bin/cargo-get && sudo chmod o+x /usr/local/bin/cargo-get
           
       - name: Clone oniux repo
         run: |
