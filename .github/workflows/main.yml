@@ -87,7 +87,8 @@ jobs:
 
           # case: no new commit => abort the workflow
           if [[ $ONIUX_PREBUILT_LATEST_TAG == $ONIUX_CURRENT_COMMIT_ID ]]; then
-            exit 1
+            echo "[!] No new version to compile"
+            exit 100
           fi
       
       - name: Get oniux version
