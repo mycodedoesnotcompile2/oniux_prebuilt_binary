@@ -172,7 +172,7 @@ jobs:
         echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
         
         cat *.sha256.txt > "$RELEASE_NOTES"
-        mkdir -p "/tmp/dontcare"
+        mkdir -p "/tmp/hashes"
         mv -f *.sha256.txt "/tmp/hashes/"
 
     - name: Create a new Github release
