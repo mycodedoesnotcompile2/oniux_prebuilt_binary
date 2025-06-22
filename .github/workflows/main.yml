@@ -62,8 +62,8 @@ jobs:
       OS: ${{ matrix.OS }}
 
     outputs:
-      ONIUX_CURRENT_COMMIT_ID: ${{ steps.release_version.outputs.ONIUX_CURRENT_COMMIT_ID }}
-      ONIUX_PREBUILT_LATEST_TAG: ${{ steps.release_version.outputs.ONIUX_PREBUILT_LATEST_TAG }}
+      ONIUX_CURRENT_COMMIT_ID: ${{ steps.release_commit_id.outputs.ONIUX_CURRENT_COMMIT_ID }}
+      ONIUX_VERSION: ${{ steps.release_version.outputs.ONIUX_VERSION }}
 
     steps:
       - name: Get latest release of this repo
@@ -74,7 +74,7 @@ jobs:
           repo: oniux_prebuilt_binary
       
       - name: Clone oniux repo and check if there is a new and uncompiled yet version
-        id: release_version
+        id: release_commit_id
         run: |
           cd /tmp/
           git clone 'https://gitlab.torproject.org/tpo/core/oniux.git' -o oniux
@@ -90,6 +90,7 @@ jobs:
           fi
       
       - name: Get oniux version
+        id: release_version
         run: |
           cd /tmp/
           sudo wget -nv "$CARGO_GET" -O /usr/local/bin/cargo-get && sudo chmod o+x /usr/local/bin/cargo-get
@@ -178,7 +179,7 @@ jobs:
     
     env:
        ONIUX_CURRENT_COMMIT_ID: ${{ needs.build.outputs.ONIUX_CURRENT_COMMIT_ID }}
-       ONIUX_PREBUILT_LATEST_TAG: ${{ needs.build.outputs.ONIUX_PREBUILT_LATEST_TAG }}
+       ONIUX_VERSION: ${{ needs.build.outputs.ONIUX_VERSION }}
     
     steps:
      - name: Download Artifact
