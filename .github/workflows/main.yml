@@ -10,6 +10,7 @@ env:
   CARGO_TERM_COLOR: always
   ONIUX_ROOT_DIR: /tmp/oniux
   APT: sudo apt -y -qq -o=Dpkg::Use-Pty=0
+  CARGO_GET: https://github.com/nicolaiunrein/cargo-get/releases/download/v1.4.0/cargo-get-x86_64-unknown-linux-gnu
 
 defaults:
   run:
@@ -61,10 +62,21 @@ jobs:
       OS: ${{ matrix.OS }}
     
     steps:
+      - name: Get cargo-get
+        run: |
+          cd /tmp/
+          wget -nv "$CARGO_GET" -O /usr/local/bin/cargo-get && chmod o+x /usr/local/bin/cargo-get
+          
       - name: Clone oniux repo
         run: |
           cd /tmp/
           git clone 'https://gitlab.torproject.org/tpo/core/oniux.git' -o oniux
+
+      - name: Get oniux version
+        run: |
+          cd /tmp/oniux
+          ONIUX_VERSION=$(cargo-get package.version)
+          echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_ENV
       
       - name: Cargo cache
         uses: actions/cache@v4
@@ -119,7 +131,7 @@ jobs:
       - name: List target
         run: |
           OLD_ONIUX_BIN_PATH="$ONIUX_ROOT_DIR/target/$TARGET/release/oniux"
-          ONIUX_BIN_PATH="$ONIUX_ROOT_DIR-$TARGET"
+          ONIUX_BIN_PATH="$ONIUX_ROOT_DIR-$VERSION-$TARGET"
           ONIUX_BIN_HASH_PATH="$ONIUX_BIN_PATH.sha256.txt"
           cp -f "$OLD_ONIUX_BIN_PATH" "$ONIUX_BIN_PATH"
           ls -alh "$ONIUX_BIN_PATH"
