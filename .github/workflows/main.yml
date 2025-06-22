@@ -97,6 +97,18 @@ jobs:
           cd /tmp/oniux
           ONIUX_VERSION=$(cargo-get package.version)
           echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_ENV
+
+
+
+
+
+      - name: Test outputs
+        run: |
+          echo ${{ steps.release_commit_id.outputs.ONIUX_CURRENT_COMMIT_ID }}
+          echo ${{ steps.release_version.outputs.ONIUX_VERSION }}
+
+
+
       
       - name: Cargo cache
         uses: actions/cache@v4
