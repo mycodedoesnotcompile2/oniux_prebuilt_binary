@@ -24,40 +24,40 @@ jobs:
       matrix:
         # a list of all the targets
         include:
-          - TARGET: x86_64-unknown-linux-gnu # tested in a debian container on a mac
+          - TARGET: x86_64-unknown-linux-gnu
             OS: ubuntu-latest
           
-          - TARGET: x86_64-unknown-linux-musl # test in an alpine container on a mac
+          - TARGET: x86_64-unknown-linux-musl
             OS: ubuntu-latest
           
-          - TARGET: aarch64-unknown-linux-gnu # tested on aws t4g.nano
+          - TARGET: aarch64-unknown-linux-gnu
             OS: ubuntu-latest
           
-          #- TARGET: aarch64-unknown-linux-musl # tested on aws t4g.nano in alpine container
+          #- TARGET: aarch64-unknown-linux-musl
           #  OS: ubuntu-latest
           
-          - TARGET: armv7-unknown-linux-gnueabihf # raspberry pi 2-3-4, not tested
+          - TARGET: armv7-unknown-linux-gnueabihf
             OS: ubuntu-latest
           
-          #- TARGET: armv7-unknown-linux-musleabihf # raspberry pi 2-3-4, not tested
+          #- TARGET: armv7-unknown-linux-musleabihf
           #  OS: ubuntu-latest
           
-          - TARGET: arm-unknown-linux-gnueabihf # raspberry pi 0-1, not tested
+          - TARGET: arm-unknown-linux-gnueabihf
             OS: ubuntu-latest
           
-          #- TARGET: arm-unknown-linux-musleabihf # raspberry pi 0-1, not tested
+          #- TARGET: arm-unknown-linux-musleabihf
           #  OS: ubuntu-latest
           
-          # - TARGET: x86_64-apple-darwin # tested on a mac, is not properly signed so there are security warnings
+          # - TARGET: x86_64-apple-darwin
           #   OS: macos-latest
           
-          # - TARGET: x86_64-pc-windows-msvc # tested on a windows machine
+          # - TARGET: x86_64-pc-windows-msvc
           #   OS: windows-latest
             
     runs-on: ${{ matrix.OS }}
 
     env:
-      NAME: oniux_binary # change with the name of your project
+      NAME: oniux_binary
       TARGET: ${{ matrix.TARGET }}
       OS: ${{ matrix.OS }}
 
@@ -66,7 +66,7 @@ jobs:
       ONIUX_VERSION: ${{ steps.release_version.outputs.ONIUX_VERSION }}
 
     steps:
-      - name: Get latest release of this repo
+      - name: Get latest release tag of this repo
         id: self_latest_version
         uses: abatilo/release-info-action@v1.3.0
         with:
@@ -99,16 +99,6 @@ jobs:
           ONIUX_VERSION=$(cargo-get package.version)
           echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_ENV
           echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_OUTPUT
-
-
-
-      - name: Test outputs
-        run: |
-          echo ${{ steps.release_commit_id.outputs.ONIUX_CURRENT_COMMIT_ID }}
-          echo ${{ steps.release_version.outputs.ONIUX_VERSION }}
-
-
-
       
       - name: Cargo cache
         uses: actions/cache@v4
@@ -188,14 +178,11 @@ jobs:
   deploy_release:
     needs: build
     runs-on: ubuntu-latest
-    
     env:
        ONIUX_CURRENT_COMMIT_ID: ${{ needs.build.outputs.ONIUX_CURRENT_COMMIT_ID }}
        ONIUX_VERSION: ${{ needs.build.outputs.ONIUX_VERSION }}
     
     steps:
-     - run: echo '${{ toJSON(needs.build.outputs) }}'
-     
      - name: Download Artifact
        uses: actions/download-artifact@v4
        with:
