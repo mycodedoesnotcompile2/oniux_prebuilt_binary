@@ -56,15 +56,15 @@ jobs:
             
     runs-on: ${{ matrix.OS }}
 
-    outputs:
-      ONIUX_CURRENT_COMMIT_ID: ${{ steps.release_version.outputs.ONIUX_CURRENT_COMMIT_ID }}
-      ONIUX_PREBUILT_LATEST_TAG: ${{ steps.release_version.outputs.ONIUX_PREBUILT_LATEST_TAG }}
-    
     env:
       NAME: oniux_binary # change with the name of your project
       TARGET: ${{ matrix.TARGET }}
       OS: ${{ matrix.OS }}
-    
+
+    outputs:
+      ONIUX_CURRENT_COMMIT_ID: ${{ steps.release_version.outputs.ONIUX_CURRENT_COMMIT_ID }}
+      ONIUX_PREBUILT_LATEST_TAG: ${{ steps.release_version.outputs.ONIUX_PREBUILT_LATEST_TAG }}
+
     steps:
       - name: Get latest release of this repo
         id: self_latest_version
@@ -175,11 +175,12 @@ jobs:
   deploy_release:
     needs: build
     runs-on: ubuntu-latest
-    steps:
-     - env:
+    
+    env:
        ONIUX_CURRENT_COMMIT_ID: ${{ needs.build.outputs.ONIUX_CURRENT_COMMIT_ID }}
        ONIUX_PREBUILT_LATEST_TAG: ${{ needs.build.outputs.ONIUX_PREBUILT_LATEST_TAG }}
-      
+    
+    steps:
      - name: Download Artifact
        uses: actions/download-artifact@v4
        with:
