@@ -83,6 +83,7 @@ jobs:
           ONIUX_CURRENT_COMMIT_ID=$(git rev-parse --short HEAD)
           ONIUX_PREBUILT_LATEST_TAG=${{ steps.self_latest_version.outputs.latest_tag }}
           echo "ONIUX_CURRENT_COMMIT_ID=$ONIUX_CURRENT_COMMIT_ID" >> $GITHUB_ENV
+          echo "ONIUX_CURRENT_COMMIT_ID=$ONIUX_CURRENT_COMMIT_ID" >> $GITHUB_OUTPUT
 
           # case: no new commit => abort the workflow
           if [[ $ONIUX_PREBUILT_LATEST_TAG == $ONIUX_CURRENT_COMMIT_ID ]]; then
@@ -97,8 +98,7 @@ jobs:
           cd /tmp/oniux
           ONIUX_VERSION=$(cargo-get package.version)
           echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_ENV
-
-
+          echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_OUTPUT
 
 
 
