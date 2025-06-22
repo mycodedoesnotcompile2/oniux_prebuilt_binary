@@ -55,6 +55,10 @@ jobs:
           #   OS: windows-latest
             
     runs-on: ${{ matrix.OS }}
+
+    outputs:
+      ONIUX_CURRENT_COMMIT_ID: ${{ steps.release_version.outputs.ONIUX_CURRENT_COMMIT_ID }}
+      ONIUX_PREBUILT_LATEST_TAG: ${{ steps.release_version.outputs.ONIUX_PREBUILT_LATEST_TAG }}
     
     env:
       NAME: oniux_binary # change with the name of your project
@@ -70,6 +74,7 @@ jobs:
           repo: oniux_prebuilt_binary
       
       - name: Clone oniux repo and check if there is a new and uncompiled yet version
+        id: release_version
         run: |
           cd /tmp/
           git clone 'https://gitlab.torproject.org/tpo/core/oniux.git' -o oniux
@@ -171,30 +176,34 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - name: Download Artifact
-      uses: actions/download-artifact@v4
-      with:
+     - env:
+       ONIUX_CURRENT_COMMIT_ID: ${{ needs.build.outputs.ONIUX_CURRENT_COMMIT_ID }}
+       ONIUX_PREBUILT_LATEST_TAG: ${{ needs.build.outputs.ONIUX_PREBUILT_LATEST_TAG }}
+      
+     - name: Download Artifact
+       uses: actions/download-artifact@v4
+       with:
         pattern: binary-*
         merge-multiple: true
         path: /tmp/results
 
-    - name: List target
-      run: |
-        cd "/tmp/results"
-        ls -alh
-
-        RELEASE_NOTES="/tmp/release_notes.txt"
-        echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
-        
-        cat *.sha256.txt > "$RELEASE_NOTES"
-        mkdir -p "/tmp/hashes"
-        mv -f *.sha256.txt "/tmp/hashes/"
-
-    - name: Create a new Github release
-      uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 #v2.3.2
-      with:
-        body_path: ${{ env.RELEASE_NOTES }}
-        name: ${{ env.ONIUX_VERSION }}
-        tag_name: ${{ env.ONIUX_CURRENT_COMMIT_ID }}
-        files: |
-          /tmp/results/oniux-*
+     - name: List target
+       run: |
+          cd "/tmp/results"
+          ls -alh
+  
+          RELEASE_NOTES="/tmp/release_notes.txt"
+          echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
+          
+          cat *.sha256.txt > "$RELEASE_NOTES"
+          mkdir -p "/tmp/hashes"
+          mv -f *.sha256.txt "/tmp/hashes/"
+  
+     - name: Create a new Github release
+       uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 #v2.3.2
+       with:
+         body_path: ${{ env.RELEASE_NOTES }}
+         name: ${{ env.ONIUX_VERSION }}
+         tag_name: ${{ env.ONIUX_CURRENT_COMMIT_ID }}
+         files: |
+           /tmp/results/oniux-*
