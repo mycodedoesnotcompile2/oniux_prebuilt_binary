@@ -132,16 +132,18 @@ jobs:
         run: |
           OLD_ONIUX_BIN_PATH="$ONIUX_ROOT_DIR/target/$TARGET/release/oniux"
           ONIUX_BIN_PATH="$ONIUX_ROOT_DIR-$ONIUX_VERSION-$TARGET"
-          ONIUX_BIN_HASH_PATH="$ONIUX_BIN_PATH.sha256.txt"
+          ONIUX_BIN_HASH_PATH="sha256.$ONIUX_BIN_PATH.txt"
           cp -f "$OLD_ONIUX_BIN_PATH" "$ONIUX_BIN_PATH"
           ls -alh "$ONIUX_BIN_PATH"
-          sha256sum --tag "$ONIUX_BIN_PATH" | tee "$ONIUX_BIN_HASH_PATH"
+
+          cd "$(dirname "$ONIUX_BIN_PATH")"
+          sha256sum --tag "$(basename "$ONIUX_BIN_PATH")" | tee "$ONIUX_BIN_HASH_PATH"
           
           echo "ONIUX_BIN_PATH=$ONIUX_BIN_PATH" >> $GITHUB_ENV
           echo "ONIUX_BIN_HASH_PATH=$ONIUX_BIN_HASH_PATH" >> $GITHUB_ENV
           
       
-      - name: Archive artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: binary-${{ matrix.TARGET }}
@@ -169,9 +171,9 @@ jobs:
         RELEASE_NOTES="/tmp/release_notes.txt"
         echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
         
-        cat *.sha256.txt > "$RELEASE_NOTES"
-        mkdir -p "/tmp/dontcare"
-        mv -f *.sha256.txt "/tmp/dontcare/"
+        cat sha256.*.txt > "$RELEASE_NOTES"
+        #mkdir -p "/tmp/dontcare"
+        #mv -f *.sha256.txt "/tmp/hashes/"
 
     - name: Create a new Github release
       uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 #v2.3.2
@@ -180,4 +182,4 @@ jobs:
         name: test
         tag_name: test
         files: |
-          /tmp/results/*
+          /tmp/results/oniux-*
