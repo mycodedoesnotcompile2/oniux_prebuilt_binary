@@ -1,9 +1,9 @@
 name: Build binary
 
 on:
-  #workflow_dispatch
-  schedule:
-    - cron: '5 2 * * *'
+  workflow_dispatch
+  #schedule:
+  #  - cron: '5 2 * * *'
 
 permissions:
   contents: write
@@ -68,12 +68,21 @@ jobs:
       ONIUX_VERSION: ${{ steps.release_version.outputs.ONIUX_VERSION }}
 
     steps:
+      # - name: Get latest release tag of this repo
+      #   id: self_latest_version
+      #   uses: abatilo/release-info-action@v1.3.0
+      #   with:
+      #     owner: mycodedoesnotcompile2
+      #     repo: oniux_prebuilt_binary
+
       - name: Get latest release tag of this repo
-        id: self_latest_version
-        uses: abatilo/release-info-action@v1.3.0
-        with:
-          owner: mycodedoesnotcompile2
-          repo: oniux_prebuilt_binary
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd /tmp/
+          ONIUX_PREBUILT_LATEST_TAG=$(gh release list -R mycodedoesnotcompile2/oniux_prebuilt_binary --json tagName -L 1 --jq '.[].tagName')
+          echo "ONIUX_PREBUILT_LATEST_TAG=$ONIUX_PREBUILT_LATEST_TAG" >> $GITHUB_ENV
+          echo "ONIUX_PREBUILT_LATEST_TAG=$ONIUX_PREBUILT_LATEST_TAG" >> $GITHUB_OUTPUT
       
       - name: Clone oniux repo and check if there is a new and uncompiled yet version
         id: release_commit_id
@@ -83,7 +92,6 @@ jobs:
 
           cd /tmp/oniux/
           ONIUX_CURRENT_COMMIT_ID=$(git rev-parse --short HEAD)
-          ONIUX_PREBUILT_LATEST_TAG=${{ steps.self_latest_version.outputs.latest_tag }}
           echo "ONIUX_CURRENT_COMMIT_ID=$ONIUX_CURRENT_COMMIT_ID" >> $GITHUB_ENV
           echo "ONIUX_CURRENT_COMMIT_ID=$ONIUX_CURRENT_COMMIT_ID" >> $GITHUB_OUTPUT
 
