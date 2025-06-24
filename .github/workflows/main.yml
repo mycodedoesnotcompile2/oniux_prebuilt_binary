@@ -88,7 +88,7 @@ jobs:
           echo "ONIUX_CURRENT_COMMIT_ID=$ONIUX_CURRENT_COMMIT_ID" >> $GITHUB_OUTPUT
 
           # case: no new commit => abort the workflow
-          if [[ $ONIUX_PREBUILT_LATEST_TAG == $ONIUX_CURRENT_COMMIT_ID ]]; then
+          if [[ $ONIUX_PREBUILT_LATEST_TAG != $ONIUX_CURRENT_COMMIT_ID ]]; then
             echo "[!] No new version to compile"
             exit 100
           fi
