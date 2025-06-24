@@ -15,4 +15,4 @@ Copyright and license
 ---------------------
 - All trademarks, service marks, trade names and product names appearing on this repository are the property of their respective owners
 - Anything published here follows, and uses, the same licences than the upstream oniux project
-- I don't work or be affiliated with the TOR project
+- I don't work or be affiliated with the TOR project, but they are awesome.
