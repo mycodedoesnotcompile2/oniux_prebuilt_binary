@@ -1,9 +1,9 @@
 name: Build binary
 
 on:
-  #workflow_dispatch
-  schedule:
-    - cron: '5 5 * * *'
+  workflow_dispatch
+  #schedule:
+  #  - cron: '5 5 * * *'
 
 permissions:
   contents: write
@@ -35,8 +35,8 @@ jobs:
           - TARGET: aarch64-unknown-linux-gnu
             OS: ubuntu-latest
           
-          #- TARGET: aarch64-unknown-linux-musl
-          #  OS: ubuntu-latest
+          - TARGET: aarch64-unknown-linux-musl
+            OS: ubuntu-24.04-arm
           
           - TARGET: armv7-unknown-linux-gnueabihf
             OS: ubuntu-latest
@@ -93,15 +93,26 @@ jobs:
             exit 100
           fi
       
-      - name: Get oniux version
-        id: release_version
+      # - name: Get oniux version
+      #   id: release_version
+      #   run: |
+      #     cd /tmp/
+      #     sudo wget -nv "$CARGO_GET" -O /usr/local/bin/cargo-get && sudo chmod o+x /usr/local/bin/cargo-get
+      #     cd /tmp/oniux
+      #     ONIUX_VERSION=$(cargo-get package.version)
+      #     echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_ENV
+      #     echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Get package name
+        id: package_name
+        uses: nicolaiunrein/cargo-get@master
+        with:
+          subcommand: package.name
+          options: --entry /tmp/oniux/Cargo.toml
+
+      - name: Test
         run: |
-          cd /tmp/
-          sudo wget -nv "$CARGO_GET" -O /usr/local/bin/cargo-get && sudo chmod o+x /usr/local/bin/cargo-get
-          cd /tmp/oniux
-          ONIUX_VERSION=$(cargo-get package.version)
-          echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_ENV
-          echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_OUTPUT
+          echo ${{ steps.package_name.outputs.metadata }}
       
       - name: Cargo cache
         uses: actions/cache@v4
