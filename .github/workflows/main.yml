@@ -1,9 +1,9 @@
 name: Build binary
 
 on:
-  workflow_dispatch
-  #schedule:
-  #  - cron: '5 5 * * *'
+  #workflow_dispatch
+  schedule:
+    - cron: '5 5 * * *'
 
 permissions:
   contents: write
@@ -87,7 +87,7 @@ jobs:
           echo "ONIUX_CURRENT_COMMIT_ID=$ONIUX_CURRENT_COMMIT_ID" >> $GITHUB_OUTPUT
 
           # case: no new commit => abort the workflow
-          if [[ $ONIUX_PREBUILT_LATEST_TAG != $ONIUX_CURRENT_COMMIT_ID ]]; then
+          if [[ $ONIUX_PREBUILT_LATEST_TAG == $ONIUX_CURRENT_COMMIT_ID ]]; then
             echo "[!] No new version to compile"
             exit 100
           fi
@@ -103,8 +103,7 @@ jobs:
         run: |
           echo "ONIUX_VERSION=${{ steps.release_version.outputs.metadata }}" >> $GITHUB_ENV
           echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_OUTPUT
-          #echo ${{ steps.release_version.outputs.metadata }}
-      
+          
       - name: Cargo cache
         uses: actions/cache@v4
         with:
