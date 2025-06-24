@@ -12,7 +12,6 @@ env:
   CARGO_TERM_COLOR: always
   ONIUX_ROOT_DIR: /tmp/oniux
   APT: sudo apt -y -qq -o=Dpkg::Use-Pty=0
-  CARGO_GET: https://github.com/nicolaiunrein/cargo-get/releases/download/v1.4.0/cargo-get-x86_64-unknown-linux-gnu
 
 defaults:
   run:
@@ -33,7 +32,7 @@ jobs:
             OS: ubuntu-latest
           
           - TARGET: aarch64-unknown-linux-gnu
-            OS: ubuntu-latest
+            OS: ubuntu-24.04-arm
           
           - TARGET: aarch64-unknown-linux-musl
             OS: ubuntu-24.04-arm
@@ -92,16 +91,6 @@ jobs:
             echo "[!] No new version to compile"
             exit 100
           fi
-      
-      # - name: Get oniux version
-      #   id: release_version
-      #   run: |
-      #     cd /tmp/
-      #     sudo wget -nv "$CARGO_GET" -O /usr/local/bin/cargo-get && sudo chmod o+x /usr/local/bin/cargo-get
-      #     cd /tmp/oniux
-      #     ONIUX_VERSION=$(cargo-get package.version)
-      #     echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_ENV
-      #     echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_OUTPUT
 
       - name: Get oniux version
         id: release_version
@@ -143,8 +132,6 @@ jobs:
 
           # some additional configuration for cross-compilation on linux
           cat >>~/.cargo/config.toml <<EOF
-          [target.aarch64-unknown-linux-gnu]
-          linker = "aarch64-linux-gnu-gcc"
           [target.armv7-unknown-linux-gnueabihf]
           linker = "arm-linux-gnueabihf-gcc"
           [target.armv7-unknown-linux-musleabihf]
