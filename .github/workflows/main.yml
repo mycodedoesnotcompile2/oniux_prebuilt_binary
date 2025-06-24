@@ -112,9 +112,9 @@ jobs:
 
       - name: Set ONIUX_VERSION env var
         run: |
-          echo "ONIUX_VERSION=${{ steps.package_name.outputs.metadata }}" >> $GITHUB_ENV
+          echo "ONIUX_VERSION=${{ steps.release_version.outputs.metadata }}" >> $GITHUB_ENV
           echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_OUTPUT
-          #echo ${{ steps.package_name.outputs.metadata }}
+          #echo ${{ steps.release_version.outputs.metadata }}
       
       - name: Cargo cache
         uses: actions/cache@v4
