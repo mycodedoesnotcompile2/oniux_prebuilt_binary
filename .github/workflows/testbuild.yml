@@ -1,0 +1,219 @@
+name: Test Build binary
+
+on:
+  #workflow_dispatch
+  schedule:
+    - cron: '5 5 * * *'
+
+#permissions:
+  #contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  ONIUX_ROOT_DIR: /tmp/oniux
+  APT: sudo apt -y -qq -o=Dpkg::Use-Pty=0
+
+defaults:
+  run:
+    # necessary for windows
+    shell: bash
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        # a list of all the targets
+        include:
+          - TARGET: x86_64-unknown-linux-gnu
+            OS: ubuntu-latest
+            container: debian:bookworm
+            
+          - TARGET: x86_64-unknown-linux-gnu
+            OS: ubuntu-latest
+          
+          - TARGET: x86_64-unknown-linux-musl
+            OS: ubuntu-latest
+          
+          - TARGET: aarch64-unknown-linux-gnu
+            OS: ubuntu-24.04-arm
+          
+          - TARGET: aarch64-unknown-linux-musl
+            OS: ubuntu-24.04-arm
+          
+          - TARGET: armv7-unknown-linux-gnueabihf
+            OS: ubuntu-latest
+          
+          #- TARGET: armv7-unknown-linux-musleabihf
+          #  OS: ubuntu-latest
+          
+          - TARGET: arm-unknown-linux-gnueabihf
+            OS: ubuntu-latest
+          
+          #- TARGET: arm-unknown-linux-musleabihf
+          #  OS: ubuntu-latest
+          
+          # - TARGET: x86_64-apple-darwin
+          #   OS: macos-latest
+          
+          # - TARGET: x86_64-pc-windows-msvc
+          #   OS: windows-latest
+            
+    runs-on: ${{ matrix.OS }}
+    container:
+      image: ${{ matrix.container }}
+
+    env:
+      NAME: oniux_binary
+      TARGET: ${{ matrix.TARGET }}
+      OS: ${{ matrix.OS }}
+
+    outputs:
+      ONIUX_CURRENT_COMMIT_ID: ${{ steps.release_commit_id.outputs.ONIUX_CURRENT_COMMIT_ID }}
+      ONIUX_VERSION: ${{ steps.release_version.outputs.ONIUX_VERSION }}
+
+    steps:
+      - name: Get latest release tag of this repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd /tmp/
+          ONIUX_PREBUILT_LATEST_TAG=$(gh release list -R mycodedoesnotcompile2/oniux_prebuilt_binary --json tagName -L 1 --jq '.[].tagName' --exclude-drafts --exclude-pre-releases)
+          echo "ONIUX_PREBUILT_LATEST_TAG=$ONIUX_PREBUILT_LATEST_TAG" >> $GITHUB_ENV
+          
+      - name: Clone oniux repo and check if there is a new and uncompiled yet version
+        id: release_commit_id
+        run: |
+          cd /tmp/
+          git clone 'https://gitlab.torproject.org/tpo/core/oniux.git' -o oniux
+
+          cd /tmp/oniux/
+          ONIUX_CURRENT_COMMIT_ID=$(git rev-parse --short HEAD)
+          echo "ONIUX_CURRENT_COMMIT_ID=$ONIUX_CURRENT_COMMIT_ID" >> $GITHUB_ENV
+          echo "ONIUX_CURRENT_COMMIT_ID=$ONIUX_CURRENT_COMMIT_ID" >> $GITHUB_OUTPUT
+
+          # case: no new commit => abort the workflow
+          if [[ $ONIUX_PREBUILT_LATEST_TAG == $ONIUX_CURRENT_COMMIT_ID ]]; then
+            echo "[!] No new version to compile"
+            exit 100
+          fi
+
+      - name: Get oniux version
+        id: release_version
+        uses: nicolaiunrein/cargo-get@master
+        with:
+          subcommand: package.version
+          options: --entry /tmp/oniux/Cargo.toml
+
+      - name: Set ONIUX_VERSION env var
+        run: |
+          echo "ONIUX_VERSION=${{ steps.release_version.outputs.metadata }}" >> $GITHUB_ENV
+          echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_OUTPUT
+          
+      - name: Cargo cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            /tmp/oniux
+          key: build-cargo-registry-${{ matrix.TARGET }}
+        
+      - name: Install and configure dependencies
+        run: |
+          # dependencies are only needed on ubuntu as that's the only place where
+          # we make cross-compilation
+          if [[ $OS =~ ^ubuntu.*$ ]]; then
+            $APT update
+            $APT install crossbuild-essential-armhf libsqlite3-dev
+          fi
+
+          if [[ $TARGET == *"-musl"* ]]; then
+            $APT install musl-tools
+          fi
+
+          if [[ $TARGET == "arm"* ]]; then
+            cd "$ONIUX_ROOT_DIR"
+            cargo install --force --locked bindgen-cli
+          fi
+
+          # some additional configuration for cross-compilation on linux
+          cat >>~/.cargo/config.toml <<EOF
+          [target.armv7-unknown-linux-gnueabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          [target.armv7-unknown-linux-musleabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          [target.arm-unknown-linux-gnueabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          [target.arm-unknown-linux-musleabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          EOF
+      
+      - name: Install rust target
+        run: rustup target add $TARGET
+        
+      - name: Run build
+        run: |
+          cd $ONIUX_ROOT_DIR
+          #cargo build --release --verbose --target $TARGET
+          cargo build --release --target $TARGET
+      
+      - name: List build information
+        run: |
+          OLD_ONIUX_BIN_PATH="$ONIUX_ROOT_DIR/target/$TARGET/release/oniux"
+          ONIUX_BIN_PATH="$ONIUX_ROOT_DIR-$ONIUX_VERSION-$TARGET"
+          ONIUX_BIN_HASH_PATH="$ONIUX_BIN_PATH.sha256.txt"
+          
+          cp -f "$OLD_ONIUX_BIN_PATH" "$ONIUX_BIN_PATH"
+          ls -alh "$ONIUX_BIN_PATH"
+
+          cd "$(dirname "$ONIUX_BIN_PATH")"
+          sha256sum --tag "$(basename "$ONIUX_BIN_PATH")" | tee "$ONIUX_BIN_HASH_PATH"
+          
+          echo "ONIUX_BIN_PATH=$ONIUX_BIN_PATH" >> $GITHUB_ENV
+          echo "ONIUX_BIN_HASH_PATH=$ONIUX_BIN_HASH_PATH" >> $GITHUB_ENV
+          
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.TARGET }}
+          path: |
+            ${{ env.ONIUX_BIN_PATH }}
+            ${{ env.ONIUX_BIN_HASH_PATH }}
+
+
+  deploy_release:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+       ONIUX_CURRENT_COMMIT_ID: ${{ needs.build.outputs.ONIUX_CURRENT_COMMIT_ID }}
+       ONIUX_VERSION: ${{ needs.build.outputs.ONIUX_VERSION }}
+    
+    steps:
+     - name: Download Artifact
+       uses: actions/download-artifact@v4
+       with:
+        pattern: binary-*
+        merge-multiple: true
+        path: /tmp/results
+
+     - name: List target
+       run: |
+          cd "/tmp/results"
+          ls -alh
+  
+          RELEASE_NOTES="/tmp/release_notes.txt"
+          echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
+          
+          cat *.sha256.txt > "$RELEASE_NOTES"
+          mkdir -p "/tmp/hashes"
+          mv -f *.sha256.txt "/tmp/hashes/"
+  
+     - name: Create a new Github release
+       uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 #v2.3.2
+       with:
+         body_path: ${{ env.RELEASE_NOTES }}
+         name: ${{ env.ONIUX_VERSION }}
+         tag_name: ${{ env.ONIUX_CURRENT_COMMIT_ID }}
+         files: |
+           /tmp/results/oniux-*
