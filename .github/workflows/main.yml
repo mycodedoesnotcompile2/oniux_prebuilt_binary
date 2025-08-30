@@ -109,7 +109,7 @@ jobs:
 
       - name: Show output env var
         run: |
-          echo $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
         
       - name: Install and configure dependencies
         run: |
