@@ -105,12 +105,6 @@ jobs:
           ONIUX_VERSION=${{ steps.release_version_cargo_get.outputs.metadata }}
           echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_ENV
           echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_OUTPUT
-
-
-      - name: Show output env var
-        run: |
-          echo ${{ steps.release_version.outputs.ONIUX_VERSION }}
-          #cat $GITHUB_OUTPUT
         
       - name: Install and configure dependencies
         run: |
@@ -207,7 +201,7 @@ jobs:
        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 #v2.3.2
        with:
          body_path: ${{ env.RELEASE_NOTES }}
-         name: ${{ env.ONIUX_VERSION }}
+         name: ${{ env.ONIUX_VERSION }} - ${{ env.ONIUX_CURRENT_COMMIT_ID }}
          tag_name: ${{ env.ONIUX_CURRENT_COMMIT_ID }}
          files: |
            /tmp/results/oniux-*
