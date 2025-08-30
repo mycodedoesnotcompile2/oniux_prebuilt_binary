@@ -108,17 +108,17 @@ jobs:
         
       - name: Install and configure dependencies
         run: |
-          # dependencies are only needed on ubuntu as that's the only place where
-          # we make cross-compilation
           if [[ $OS =~ ^ubuntu.*$ ]]; then
             $APT update
             $APT install crossbuild-essential-armhf libsqlite3-dev
           fi
 
+          # for musl builds
           if [[ $TARGET == *"-musl"* ]]; then
             $APT install musl-tools
           fi
 
+          # for arm targets
           if [[ $TARGET == "arm"* ]]; then
             cd "$ONIUX_ROOT_DIR"
             cargo install --force --locked bindgen-cli
