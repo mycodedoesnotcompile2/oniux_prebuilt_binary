@@ -109,7 +109,8 @@ jobs:
 
       - name: Show output env var
         run: |
-          cat $GITHUB_OUTPUT
+          echo ${{ steps.release_version.outputs.ONIUX_VERSION }}
+          #cat $GITHUB_OUTPUT
         
       - name: Install and configure dependencies
         run: |
