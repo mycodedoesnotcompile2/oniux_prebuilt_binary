@@ -201,7 +201,7 @@ jobs:
        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 #v2.3.2
        with:
          body_path: ${{ env.RELEASE_NOTES }}
-         name: ${{ env.ONIUX_VERSION }} - ${{ env.ONIUX_CURRENT_COMMIT_ID }}
+         name: version ${{ env.ONIUX_VERSION }} - build ${{ env.ONIUX_CURRENT_COMMIT_ID }}
          tag_name: ${{ env.ONIUX_CURRENT_COMMIT_ID }}
          files: |
            /tmp/results/oniux-*
