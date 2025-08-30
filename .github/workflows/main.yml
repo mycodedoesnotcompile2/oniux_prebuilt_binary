@@ -93,25 +93,23 @@ jobs:
           fi
 
       - name: Get oniux version
-        id: release_version
+        id: release_version_cargo_get
         uses: nicolaiunrein/cargo-get@master
         with:
           subcommand: package.version
           options: --entry /tmp/oniux/Cargo.toml
 
       - name: Set ONIUX_VERSION env var
+        id: release_version
         run: |
-          ONIUX_VERSION=${{ steps.release_version.outputs.metadata }}
+          ONIUX_VERSION=${{ steps.release_version_cargo_get.outputs.metadata }}
           echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_ENV
           echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_OUTPUT
-          
-      # - name: Cargo cache
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: |
-      #       ~/.cargo/registry
-      #       /tmp/oniux
-      #     key: build-cargo-registry-${{ matrix.TARGET }}
+
+
+      - name: Show output env var
+        run: |
+          echo $GITHUB_OUTPUT
         
       - name: Install and configure dependencies
         run: |
