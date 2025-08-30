@@ -1,9 +1,9 @@
 name: Build binary
 
 on:
-  #workflow_dispatch
-  schedule:
-    - cron: '5 5 * * *'
+  workflow_dispatch
+  #schedule:
+  #  - cron: '5 5 * * *'
 
 permissions:
   contents: write
@@ -101,16 +101,17 @@ jobs:
 
       - name: Set ONIUX_VERSION env var
         run: |
-          echo "ONIUX_VERSION=${{ steps.release_version.outputs.metadata }}" >> $GITHUB_ENV
+          ONIUX_VERSION=${{ steps.release_version.outputs.metadata }}
+          echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_ENV
           echo "ONIUX_VERSION=$ONIUX_VERSION" >> $GITHUB_OUTPUT
           
-      - name: Cargo cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            /tmp/oniux
-          key: build-cargo-registry-${{ matrix.TARGET }}
+      # - name: Cargo cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       ~/.cargo/registry
+      #       /tmp/oniux
+      #     key: build-cargo-registry-${{ matrix.TARGET }}
         
       - name: Install and configure dependencies
         run: |
