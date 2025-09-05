@@ -200,6 +200,7 @@ jobs:
      - name: Create a new Github release
        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 #v2.3.2
        with:
+         make_latest: true
          body_path: ${{ env.RELEASE_NOTES }}
          name: version ${{ env.ONIUX_VERSION }} - build ${{ env.ONIUX_CURRENT_COMMIT_ID }}
          tag_name: ${{ env.ONIUX_CURRENT_COMMIT_ID }}
