@@ -39,26 +39,30 @@ jobs:
           
           - TARGET: armv7-unknown-linux-musleabihf
             OS: ubuntu-latest
+            COMPILER: cross
           
           # - TARGET: arm-unknown-linux-gnueabihf
           #   OS: ubuntu-latest
           
           - TARGET: arm-unknown-linux-musleabihf
             OS: ubuntu-latest
+            COMPILER: cross
           
           - TARGET: aarch64-apple-darwin
             OS: macos-latest
+            COMPILER: cargo
   
           - TARGET: x86_64-apple-darwin
             OS: macos-26-intel
-            #COMPILER: cargo
+            COMPILER: cargo
           
           - TARGET: x86_64-pc-windows-msvc
             OS: windows-latest
+            COMPILER: cargo
 
           - TARGET: aarch64-pc-windows-msvc
             OS: windows-latest
-            #COMPILER: cargo
+            COMPILER: cargo
             
     runs-on: ${{ matrix.OS }}
 
@@ -66,6 +70,7 @@ jobs:
       NAME: oniux_binary
       TARGET: ${{ matrix.TARGET }}
       OS: ${{ matrix.OS }}
+      COMPILER: ${{ matrix.COMPILER }}
 
     outputs:
       ONIUX_CURRENT_COMMIT_ID: ${{ steps.release_commit_id.outputs.ONIUX_CURRENT_COMMIT_ID }}
@@ -120,26 +125,31 @@ jobs:
 
           # for musl builds
           if [[ $TARGET == *"-musl"* ]]; then
+            $APT update
             $APT install musl-tools
           fi
 
           # for arm targets
           if [[ $TARGET == "arm"* ]]; then
             cd "$ONIUX_ROOT_DIR"
-            cargo install --force --locked bindgen-cli
+            $APT update
+            $APT install gcc-arm-linux-gnueabihf
           fi
 
+          cargo install --force bindgen-cli
+          cargo install cross
+          
           # some additional configuration for cross-compilation on linux
-          cat >>~/.cargo/config.toml <<EOF
-          [target.armv7-unknown-linux-gnueabihf]
-          linker = "arm-linux-gnueabihf-gcc"
-          [target.armv7-unknown-linux-musleabihf]
-          linker = "arm-linux-gnueabihf-gcc"
-          [target.arm-unknown-linux-gnueabihf]
-          linker = "arm-linux-gnueabihf-gcc"
-          [target.arm-unknown-linux-musleabihf]
-          linker = "arm-linux-gnueabihf-gcc"
-          EOF
+          # cat >>~/.cargo/config.toml <<EOF
+          # [target.armv7-unknown-linux-gnueabihf]
+          # linker = "arm-linux-gnueabihf-gcc"
+          # [target.armv7-unknown-linux-musleabihf]
+          # linker = "arm-linux-gnueabihf-gcc"
+          # [target.arm-unknown-linux-gnueabihf]
+          # linker = "arm-linux-gnueabihf-gcc"
+          # [target.arm-unknown-linux-musleabihf]
+          # linker = "arm-linux-gnueabihf-gcc"
+          # EOF
       
       - name: Install rust target
         run: rustup target add $TARGET
@@ -148,7 +158,8 @@ jobs:
         run: |
           cd $ONIUX_ROOT_DIR
           #cargo build --release --verbose --target $TARGET
-          cargo build --release --target $TARGET
+          
+          $COMPILER build --release --target $TARGET
       
       - name: List build information
         run: |
