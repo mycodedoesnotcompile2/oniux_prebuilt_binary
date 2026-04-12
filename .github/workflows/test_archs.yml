@@ -1,4 +1,4 @@
-name: Build binary
+name: Test archs
 
 on:
   workflow_dispatch
